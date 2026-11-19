@@ -1,0 +1,52 @@
+# Edits to the `permissions:` block that WorkSwarm 0.2.7 writes into
+# ~/.jiuwenswarm/config/config.yaml when you run jiuwenswarm-init.
+#
+# How to apply them by hand:
+#   - scalar keys (enabled, defaults, tools.<name>, file_guard.defaults.<axis>)
+#     replace the shipped value
+#   - entries under `rules` and `file_guard.paths` are appended to the shipped lists
+#
+# demo/policy.py applies exactly these edits, so the checks test what you type.
+permissions:
+  # Shipped as false. While it is false the engine allows every call.
+  enabled: true
+
+  # Any tool not listed under `tools` (subagents, skills, new MCP tools) asks first.
+  # Shipped as allow.
+  defaults:
+    "*": ask
+
+  tools:
+    # Every shell command asks unless a rule below allows or denies it.
+    # Shipped as allow.
+    bash: ask
+    # Reads and searches are cheap to allow at the tool level, because
+    # file_guard still decides which paths they may touch.
+    read_file: allow
+    glob: allow
+    grep: allow
+
+  rules:
+    # Recursive delete in any flag order: rm -rf, rm -fr, rm -r -f, rm -R, rm --recursive.
+    - id: deny_recursive_rm
+      tools: [shell]
+      pattern: 're:(^|[^\w.-])rm\s+(\S+\s+)*(-[A-Za-z]*[rR][A-Za-z]*|--recursive)(\s|$)'
+      action: deny
+    # file_guard only sees paths with a slash in them, so `cat .env` would slip past it.
+    - id: deny_dotenv_in_shell
+      tools: [shell]
+      pattern: 're:\.env\b'
+      action: deny
+
+  file_guard:
+    # Outside the workspace: reads ask, writes and execution are refused.
+    # Shipped as ask / ask / ask.
+    defaults:
+      write: deny
+      exec: deny
+    paths:
+      - path: "**/credentials.json"
+        match: glob
+        read: deny
+        write: deny
+        exec: deny

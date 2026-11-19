@@ -1,0 +1,11 @@
+# Local runtime state created by the live demo (fresh per run)
+runs/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Written by jiuwenswarm-start into the working directory
+logs/
+scripted_model.log.jsonl

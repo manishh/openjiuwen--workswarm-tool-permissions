@@ -1,0 +1,4 @@
+# WorkSwarm (formerly JiuwenSwarm) is published on PyPI as `workswarm`. It installs
+# the jiuwenswarm-* commands and openJiuwen Agent Core 0.1.19, which holds the
+# permission engine. websockets, psutil, PyYAML and ruamel.yaml come with it.
+workswarm==0.2.7
